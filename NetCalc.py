@@ -1,8 +1,8 @@
 # Импортируем необходимые библиотеки
-from ipaddress import IPv4Network, summarize_address_range, IPv4Address, collapse_addresses
-import re
-import math
 import ipaddress
+import math
+from ipaddress import IPv4Network, summarize_address_range, IPv4Address
+
 
 def input_with_validation(prompt, validator):
     """
@@ -15,6 +15,7 @@ def input_with_validation(prompt, validator):
             return value
         print("\n-------------------------------------------\n\nНекорректный ввод. Попробуйте еще раз.")
 
+
 def is_valid_cidr(value):
     """
     Возвращает True, если строка является корректным CIDR-адресом, иначе False
@@ -24,6 +25,7 @@ def is_valid_cidr(value):
         return True
     except ValueError:
         return False
+
 
 def is_valid_n(value):
     """
@@ -35,28 +37,38 @@ def is_valid_n(value):
     except ValueError:
         return False
 
+
 # Функция проверки на корректность ввода типа сортировки
 def is_valid_sort_type(user_input):
     return user_input in ['1', '2', '3', '4']
+
 
 # Функция проверки на корректность ввода опции меню
 def is_valid_menu_option(user_input):
     return user_input in ['1', '2', '3', '4', '5', '0']
 
+
 # Функция исключения подсетей из исходной сети
 def exclude_subnets():
-    main_network = IPv4Network(input_with_validation('\n-------------------------------------------\n\n\nВведите исходную сеть в формате CIDR\n(например, 0.0.0.0/0):\n\nВвод: ', is_valid_cidr))
-    N = int(input_with_validation('\n-------------------------------------------\n\nВведите количество исключаемых подсетей:\n\nВвод: ', is_valid_n))
+    main_network = IPv4Network(input_with_validation(
+        '\n-------------------------------------------\n\n\nВведите исходную сеть в формате CIDR\n(например, 0.0.0.0/0):\n\nВвод: ',
+        is_valid_cidr))
+    N = int(input_with_validation(
+        '\n-------------------------------------------\n\nВведите количество исключаемых подсетей:\n\nВвод: ',
+        is_valid_n))
 
     exclude_networks = []
     for i in range(N):
         while True:
-            exclude = IPv4Network(input_with_validation(f'\n-------------------------------------------\n\nВведите исключаемую сеть/маску {i+1} в формате CIDR\n(например, 172.16.0.0/12):\n\nВвод: ', is_valid_cidr))
+            exclude = IPv4Network(input_with_validation(
+                f'\n-------------------------------------------\n\nВведите исключаемую сеть/маску {i + 1} в формате CIDR\n(например, 172.16.0.0/12):\n\nВвод: ',
+                is_valid_cidr))
             if exclude.overlaps(main_network):
                 exclude_networks.append(exclude)
                 break
             else:
-                print("\n-------------------------------------------\n\nОшибка: введенная подсеть не пересекается с исходной сетью. Введите другую.")
+                print(
+                    "\n-------------------------------------------\n\nОшибка: введенная подсеть не пересекается с исходной сетью. Введите другую.")
 
     result = [main_network]
 
@@ -72,7 +84,9 @@ def exclude_subnets():
                 new_result.append(net)
         result = new_result
 
-    sort_type = input_with_validation('\n-------------------------------------------\n\nВведите номер типа сортировки результата:\n1 - по возрастанию адреса сети,\n2 - по возрастанию ширины маски,\n3 - по убыванию ширины маски,\n4 - по убыванию адреса сети.\n\nВвод: ', is_valid_sort_type)
+    sort_type = input_with_validation(
+        '\n-------------------------------------------\n\nВведите номер типа сортировки результата:\n1 - по возрастанию адреса сети,\n2 - по возрастанию ширины маски,\n3 - по убыванию ширины маски,\n4 - по убыванию адреса сети.\n\nВвод: ',
+        is_valid_sort_type)
     if sort_type == '1':
         result.sort(key=lambda x: int(x.network_address))
     elif sort_type == '2':
@@ -98,6 +112,7 @@ def is_valid_ip_with_cidr(user_input):
     except ValueError:
         return False
 
+
 # Функция определения типа сети
 def network_type(network):
     private_blocks = [IPv4Network('10.0.0.0/8'), IPv4Network('172.16.0.0/12'), IPv4Network('192.168.0.0/16')]
@@ -115,9 +130,12 @@ def network_type(network):
     else:
         return "неопределенная"
 
+
 # Функция вывода информации о сети
 def get_network_info():
-    ip_with_cidr = input_with_validation('\n-------------------------------------------\n\nВведите IP-адрес с маской в формате CIDR\n(например, 192.168.0.156/24):\n\nВвод: ', is_valid_ip_with_cidr)
+    ip_with_cidr = input_with_validation(
+        '\n-------------------------------------------\n\nВведите IP-адрес с маской в формате CIDR\n(например, 192.168.0.156/24):\n\nВвод: ',
+        is_valid_ip_with_cidr)
     ip, prefix = ip_with_cidr.split('/')
     network = IPv4Network(f"{IPv4Address(ip)}/{prefix}", strict=False)
     subnet_mask_bits = int(prefix)
@@ -178,37 +196,48 @@ def get_network_info():
     print(f"Класс сети: {network_class} - {network_type(network)} сеть")
     print('\n')
 
+
 # Функция разделения исходной сети на подсети
 def subnet_splitter():
-    subnet_cidr = input_with_validation('\n-------------------------------------------\n\nВведите адрес исходной сети в формате CIDR\n(например 10.0.0.0/8):\n\nВвод: ', is_valid_cidr)
+    subnet_cidr = input_with_validation(
+        '\n-------------------------------------------\n\nВведите адрес исходной сети в формате CIDR\n(например 10.0.0.0/8):\n\nВвод: ',
+        is_valid_cidr)
     subnet = IPv4Network(subnet_cidr)
 
     print("\n-------------------------------------------\n\nСписок масок и кол-ва дробных подсетей:")
     for i in range(subnet.prefixlen + 1, 33):
-        print(f"({i - subnet.prefixlen})    /{i}    -    {2**(i - subnet.prefixlen)} подсетей")
+        print(f"({i - subnet.prefixlen})    /{i}    -    {2 ** (i - subnet.prefixlen)} подсетей")
 
-    mask_choice = int(input_with_validation('\n-------------------------------------------\n\nВыберите (номер) пункта с кол-во подсетей:\n\nВвод: ', is_valid_n))
+    mask_choice = int(input_with_validation(
+        '\n-------------------------------------------\n\nВыберите (номер) пункта с кол-во подсетей:\n\nВвод: ',
+        is_valid_n))
 
     new_prefixlen = subnet.prefixlen + mask_choice
     if new_prefixlen > 32:
-        print("\n-------------------------------------------\n\nНевозможно разделить подсеть на указанное кол-во подсетей.")
+        print(
+            "\n-------------------------------------------\n\nНевозможно разделить подсеть на указанное кол-во подсетей.")
         return
 
     new_subnets = subnet.subnets(new_prefix=new_prefixlen)
-    
+
     print("\n-------------------------------------------\n\nСписок подсетей после дробления:")
     for i, new_subnet in enumerate(new_subnets, start=1):
         print(f"{new_subnet}")
 
     print('\n')
 
+
 # Функция суммаризации подсетей
 def summarize_networks():
-    N = int(input_with_validation('\n-------------------------------------------\n\nВведите количество сетей:\n\nВвод: ', is_valid_n))
+    N = int(
+        input_with_validation('\n-------------------------------------------\n\nВведите количество сетей:\n\nВвод: ',
+                              is_valid_n))
 
     networks = []
     for i in range(N):
-        network = IPv4Network(input_with_validation(f'\n-------------------------------------------\n\nВведите сеть {i+1} в формате CIDR\n(например, 192.168.0.0/24):\n\nВвод: ', is_valid_cidr))
+        network = IPv4Network(input_with_validation(
+            f'\n-------------------------------------------\n\nВведите сеть {i + 1} в формате CIDR\n(например, 192.168.0.0/24):\n\nВвод: ',
+            is_valid_cidr))
         networks.append(network)
 
     # Найдите самый нижний и самый высокий IP-адрес из всех сетей
@@ -231,7 +260,8 @@ def summarize_networks():
     print(str(summary))
 
     print('\n')
-    
+
+
 # Функция определения классовой маски A/B/C для тиражирования подсетей
 
 def get_subnet_mask(ip_address):
@@ -251,11 +281,14 @@ def get_subnet_mask(ip_address):
     else:
         raise ValueError("\n-------------------------------------------\n\nНекорректный IP-адрес")
 
+
 # Функция тиражирования подсетей
 
 def subnet_tirazh():
     while True:
-        start_ip_str = input_with_validation("\n-------------------------------------------\n\nВведите начальный IP-адрес сети (без маски):\n\nВвод: ", is_valid_cidr)
+        start_ip_str = input_with_validation(
+            "\n-------------------------------------------\n\nВведите начальный IP-адрес сети (без маски):\n\nВвод: ",
+            is_valid_cidr)
         if '/' in start_ip_str:
             print("\n-------------------------------------------\n\nНекорректный ввод! Попробуйте снова.")
             continue
@@ -271,15 +304,22 @@ def subnet_tirazh():
     required_network = ipaddress.IPv4Network(f"{start_ip}/{required_mask}", strict=False)
     required_hosts = required_network.num_addresses - 2
     max_hosts = 2 ** (32 - required_network.prefixlen) - 2
-
+    if max_hosts == -1:
+        max_num = 16777214
+        max_ip = IPv4Address("255.255.255.255")
+        available_ips2 = int(max_ip) - int(start_ip)
+        max_hosts = min(available_ips2, max_num)
     prompt = f"\n-------------------------------------------\n\nВведите количество хостов в желаемой сети (от 1 до {max_hosts}):\n\nВвод: "
     required_hosts_input = int(input_with_validation(prompt, is_valid_n))
 
     prefix = 32 - int(math.ceil(math.log2(required_hosts_input + 2)))
-    max_possible_subnets = (int(ipaddress.IPv4Address("255.255.255.255")) - int(start_ip)) // (required_hosts_input + 2) + 1
+    max_possible_subnets = (int(ipaddress.IPv4Address("255.255.255.255")) - int(start_ip)) // (
+                required_hosts_input + 2) + 1
 
     while True:
-        tirazh_count_str = input_with_validation(f"\n-------------------------------------------\n\nВведите количество тиражируемых подсетей (от 1 до {max_possible_subnets}):\n\nВвод: ", is_valid_n)
+        tirazh_count_str = input_with_validation(
+            f"\n-------------------------------------------\n\nВведите количество тиражируемых подсетей (от 1 до {max_possible_subnets}):\n\nВвод: ",
+            is_valid_n)
         if '/' in tirazh_count_str:
             print("\n-------------------------------------------\n\nНекорректный ввод! Попробуйте снова.")
             continue
@@ -287,7 +327,8 @@ def subnet_tirazh():
         if 1 <= tirazh_count <= max_possible_subnets:
             break
         else:
-            print(f"\n-------------------------------------------\n\nНекорректное значение! Введите число от 1 до {max_possible_subnets}.")
+            print(
+                f"\n-------------------------------------------\n\nНекорректное значение! Введите число от 1 до {max_possible_subnets}.")
 
     networks = []
     for _ in range(tirazh_count):
@@ -295,7 +336,7 @@ def subnet_tirazh():
             raise ValueError("\n-------------------------------------------\n\nНекорректное количество подсетей")
         network = ipaddress.IPv4Network((start_ip, prefix), strict=False)
         next_start_ip = int(network[-1]) + 1
-        if next_start_ip >= 2**32:
+        if next_start_ip >= 2 ** 32:
             break
         start_ip = ipaddress.IPv4Address(next_start_ip)
 
@@ -306,10 +347,11 @@ def subnet_tirazh():
         print(new_subnet)
 
 
-
 # Главное меню
 def main_menu():
-    menu_option = input_with_validation("\n===========================================\n\nМЕНЮ:\n1 - Информация об адресе и сети\n2 - Дробление сетей\n3 - Исключение подсетей\n4 - Суммаризация подсетей\n5 - Тиражирование подсетей\n0 - Выход\n\n===========================================\n\nВыберете нужное действие:\n\nВвод: ", is_valid_menu_option)
+    menu_option = input_with_validation(
+        "\n===========================================\n\nМЕНЮ:\n1 - Информация об адресе и сети\n2 - Дробление сетей\n3 - Исключение подсетей\n4 - Суммаризация подсетей\n5 - Тиражирование подсетей\n0 - Выход\n\n===========================================\n\nВыберете нужное действие:\n\nВвод: ",
+        is_valid_menu_option)
 
     if menu_option == '1':
         get_network_info()
@@ -326,6 +368,7 @@ def main_menu():
         return
 
     main_menu()
+
 
 # Точка входа в программу
 if __name__ == "__main__":
