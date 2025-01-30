@@ -31,6 +31,14 @@ jobs:
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+      - name: Debug Python and Environment
+        run: |
+          python --version
+          pip list
+          echo "Current Directory: $(pwd)"
+          echo "Files in Directory:"
+          ls -la
+
       - name: Build Executable
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
