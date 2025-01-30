@@ -85,9 +85,9 @@ jobs:
         with:
           name: binary-linux-arm64
           path: ./bin/*
-          
+
   update-readme:
-    needs: [build, linux-arm64]
+    needs: [build, linux-arm64] # Убедитесь, что update-readme ожидает завершения всех задач
     runs-on: ubuntu-latest
 
     steps:
@@ -109,11 +109,12 @@ jobs:
           echo "| Windows (x64) | [Download](${{ env.windows_url }}) |" >> README.md
           echo "| Linux (amd64) | [Download](${{ env.linux_amd64_url }}) |" >> README.md
           echo "| Linux (arm64) | [Download](${{ env.linux_arm64_url }}) |" >> README.md
-          
+
       - name: Commit changes
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+          git checkout main
           git add README.md
           git commit -m "Update README.md with download links"
-          git push
+          git push origin main
