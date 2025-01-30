@@ -41,15 +41,17 @@ jobs:
           echo "Current directory:"
           pwd
           echo "Directory contents:"
-          if [ "${{ runner.os }}" == "Windows" ]; then Get-ChildItem; else ls -la; fi
+          if ($Env:OS -eq "Windows_NT") { Get-ChildItem } else { ls -la }
+        shell: pwsh
 
       - name: Build Executable
         run: |
-          if [ "${{ runner.os }}" == "Windows" ]; then
+          if ($Env:OS -eq "Windows_NT") {
             pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
-          else
+          } else {
             pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
-          fi
+          }
+        shell: pwsh
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
