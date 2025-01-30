@@ -9,20 +9,20 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
         arch: [amd64]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.9'  # Укажите нужную версию Python
+          python-version: '3.9'
 
       - name: Install PyInstaller
         run: pip install pyinstaller
@@ -34,13 +34,13 @@ jobs:
       - name: Build Executable
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
-            pyinstaller --onefile --distpath=./bin/NetCalc.exe NetCalc.py
+            pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
           else
-            pyinstaller --onefile --distpath=./bin/NetCalc NetCalc.py
+            pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
           fi
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: binary-${{ runner.os }}-${{ matrix.arch }}
           path: ./bin/*
@@ -49,10 +49,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
@@ -60,13 +60,14 @@ jobs:
         run: pip install pyinstaller
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Build Executable
-        run: pyinstaller --onefile --distpath=./bin/NetCalc NetCalc.py
+        run: pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
 
-      - name: Upload Linux ARM64 Artifacts
-        uses: actions/upload-artifact@v2
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
         with:
           name: NetCalc-linux-arm64
           path: ./bin/*
