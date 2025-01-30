@@ -29,7 +29,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
+        shell: bash
 
       - name: Debug Environment
         run: |
@@ -54,31 +55,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: binary-${{ runner.os }}-${{ matrix.arch }}
-          path: ./bin/*
-
-  linux-arm64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install PyInstaller
-        run: pip install pyinstaller
-
-      - name: Install dependencies
-        run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      - name: Build Executable
-        run: pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: NetCalc-linux-arm64
           path: ./bin/*
