@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         shell: bash
 
       - name: Debug Environment
@@ -41,7 +41,7 @@ jobs:
           echo "Current directory:"
           pwd
           echo "Directory contents:"
-          ls -la
+          if [ "${{ runner.os }}" == "Windows" ]; then Get-ChildItem; else ls -la; fi
 
       - name: Build Executable
         run: |
