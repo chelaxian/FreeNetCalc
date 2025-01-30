@@ -98,9 +98,10 @@ jobs:
 
       - name: Get Artifact IDs
         id: artifact-ids
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          artifacts=$(gh api -H "Accept: application/vnd.github+json" \
-          /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts)
+          artifacts=$(gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts)
           echo "$artifacts" > artifacts.json
           windows_id=$(jq -r '.artifacts[] | select(.name=="binary-windows-latest-amd64") | .id' artifacts.json)
           linux_amd64_id=$(jq -r '.artifacts[] | select(.name=="binary-ubuntu-latest-amd64") | .id' artifacts.json)
