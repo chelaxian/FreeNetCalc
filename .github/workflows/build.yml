@@ -31,12 +31,15 @@ jobs:
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Debug Python and Environment
+      - name: Debug Environment
         run: |
+          echo "Python version:"
           python --version
+          echo "Installed packages:"
           pip list
-          echo "Current Directory: $(pwd)"
-          echo "Files in Directory:"
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
           ls -la
 
       - name: Build Executable
