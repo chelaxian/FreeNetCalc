@@ -122,5 +122,5 @@ jobs:
         run: |
           git add README.md
           git commit -m "Update README.md with download links"
+          git pull --rebase origin main
           git push origin HEAD:main
-
