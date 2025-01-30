@@ -87,12 +87,14 @@ jobs:
           path: ./bin/*
 
   update-readme:
-    needs: [build, linux-arm64] # Убедитесь, что update-readme ожидает завершения всех задач
+    needs: [build, linux-arm64]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: main # Убедитесь, что вы клонируете правильную ветку
 
       - name: Get Artifact URLs
         id: artifact-urls
@@ -110,11 +112,15 @@ jobs:
           echo "| Linux (amd64) | [Download](${{ env.linux_amd64_url }}) |" >> README.md
           echo "| Linux (arm64) | [Download](${{ env.linux_arm64_url }}) |" >> README.md
 
-      - name: Commit changes
+      - name: Configure Git for Push
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git checkout main
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
+      - name: Commit and Push Changes
+        run: |
           git add README.md
           git commit -m "Update README.md with download links"
-          git push origin main
+          git push origin HEAD:main
+
