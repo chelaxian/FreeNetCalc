@@ -56,7 +56,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: binary-${{ runner.os }}-${{ matrix.arch }}
+          name: binary-${{ matrix.os }}-${{ matrix.arch }}
           path: ./bin/*
 
   linux-arm64:
@@ -96,21 +96,27 @@ jobs:
         with:
           ref: main
 
-      - name: Get Artifact URLs
-        id: artifact-urls
+      - name: Get Artifact IDs
+        id: artifact-ids
         run: |
-          echo "windows_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/binary-windows-amd64" >> $GITHUB_ENV
-          echo "linux_amd64_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/binary-ubuntu-amd64" >> $GITHUB_ENV
-          echo "linux_arm64_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/binary-linux-arm64" >> $GITHUB_ENV
+          artifacts=$(gh api -H "Accept: application/vnd.github+json" \
+          /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts)
+          echo "$artifacts" > artifacts.json
+          windows_id=$(jq -r '.artifacts[] | select(.name=="binary-windows-latest-amd64") | .id' artifacts.json)
+          linux_amd64_id=$(jq -r '.artifacts[] | select(.name=="binary-ubuntu-latest-amd64") | .id' artifacts.json)
+          linux_arm64_id=$(jq -r '.artifacts[] | select(.name=="binary-linux-arm64") | .id' artifacts.json)
+          echo "windows_id=$windows_id" >> $GITHUB_ENV
+          echo "linux_amd64_id=$linux_amd64_id" >> $GITHUB_ENV
+          echo "linux_arm64_id=$linux_arm64_id" >> $GITHUB_ENV
 
       - name: Update README.md
         run: |
           echo "### DOWNLOAD" > README.md
           echo "| Platform      | Download Link |" >> README.md
           echo "|---------------|---------------|" >> README.md
-          echo "| Windows (x64) | [Download](${{ env.windows_url }}) |" >> README.md
-          echo "| Linux (amd64) | [Download](${{ env.linux_amd64_url }}) |" >> README.md
-          echo "| Linux (arm64) | [Download](${{ env.linux_arm64_url }}) |" >> README.md
+          echo "| Windows (x64) | [Download](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ env.windows_id }}) |" >> README.md
+          echo "| Linux (amd64) | [Download](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ env.linux_amd64_id }}) |" >> README.md
+          echo "| Linux (arm64) | [Download](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ env.linux_arm64_id }}) |" >> README.md
 
       - name: Configure Git for Push
         run: |
@@ -121,6 +127,6 @@ jobs:
       - name: Commit and Push Changes
         run: |
           git add README.md
-          git commit -m "Update README.md with download links"
+          git commit -m "Update README.md with correct artifact links"
           git pull --rebase origin main
           git push origin HEAD:main
