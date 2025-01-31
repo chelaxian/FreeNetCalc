@@ -1,6 +1,6 @@
 ### DOWNLOAD
 | Platform      | Download Link |
 |---------------|---------------|
-| Windows (x64) | [Download](https://github.com/chelaxian/FreeNetCalc/actions/runs/13072876480/artifacts/2516669947) |
-| Linux (amd64) | [Download](https://github.com/chelaxian/FreeNetCalc/actions/runs/13072876480/artifacts/2516668839) |
-| Linux (arm64) | [Download](https://github.com/chelaxian/FreeNetCalc/actions/runs/13072876480/artifacts/2516669754) |
+| Windows (x64) | [Download](https://github.com/chelaxian/FreeNetCalc/actions/runs/13072900519/artifacts/2516675631) |
+| Linux (amd64) | [Download](https://github.com/chelaxian/FreeNetCalc/actions/runs/13072900519/artifacts/2516675418) |
+| Linux (arm64) | [Download](https://github.com/chelaxian/FreeNetCalc/actions/runs/13072900519/artifacts/2516676023) |
