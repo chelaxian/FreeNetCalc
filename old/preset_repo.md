@@ -6,6 +6,3 @@
    - Перейдите в **Settings > Actions > General**.
    - Прокрутите вниз до секции **Workflow permissions**.
    - Убедитесь, что выбрано **Read and write permissions**.
-
-2. **Обновите шаг `Configure Git for Push`**:
-   - Убедитесь, что URL репозитория правильно настроен для использования токена.
