@@ -75,7 +75,7 @@ jobs:
         run: |
           docker run --rm --platform linux/arm64 \
             -v $(pwd):/src -w /src arm64v8/debian:bullseye bash -c "
-              apt update && apt install -y python3 python3-pip && \
+              apt update && apt install -y python3 python3-pip file && \
               pip3 install pyinstaller && \
               pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py && \
               file ./bin/NetCalc
@@ -89,7 +89,6 @@ jobs:
         with:
           name: binary-linux-arm64
           path: ./bin/*
-
 
 
   update-readme:
