@@ -1,79 +1,23 @@
-
-name: Build Binaries
-
-on:
-  push:
-    branches:
-      - main
-  release:
-    types: [created]
-
-jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        arch: [amd64]
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install PyInstaller
-        run: pip install pyinstaller
-
-      - name: Install dependencies
-        run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        shell: bash
-
-      - name: Debug Environment
-        run: |
-          echo "Python version:"
-          python --version
-          echo "Installed packages:"
-          pip list
-          echo "Current directory:"
-          pwd
-          echo "Directory contents:"
-          if ($Env:OS -eq "Windows_NT") { Get-ChildItem } else { ls -la }
-        shell: pwsh
-
-      - name: Build Executable
-        run: |
-          if ($Env:OS -eq "Windows_NT") {
-            pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
-          } else {
-            pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
-          }
-        shell: pwsh
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: binary-${{ matrix.os }}-${{ matrix.arch }}
-          path: ./bin/*
-
   linux-arm64:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Enable QEMU for ARM64
+        run: |
+          sudo apt update
+          sudo apt install -y qemu binfmt-support qemu-user-static
+
       - name: Build ARM64 Binary in Container
         run: |
-          docker run --rm --platform linux/arm64 -v $(pwd):/src -w /src debian:bullseye bash -c "
-            apt update && apt install -y python3 python3-pip && \
-            pip3 install pyinstaller && \
-            pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py && \
-            file ./bin/NetCalc
-          "
+          docker run --rm --platform linux/arm64 \
+            -v $(pwd):/src -w /src arm64v8/debian:bullseye bash -c "
+              apt update && apt install -y python3 python3-pip && \
+              pip3 install pyinstaller && \
+              pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py && \
+              file ./bin/NetCalc
+            "
 
       - name: Check Binary Architecture
         run: file ./bin/NetCalc
@@ -83,51 +27,3 @@ jobs:
         with:
           name: binary-linux-arm64
           path: ./bin/*
-
-
-
-  update-readme:
-    needs: [build, linux-arm64]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: main
-
-      - name: Get Artifact IDs
-        id: artifact-ids
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          artifacts=$(gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts)
-          echo "$artifacts" > artifacts.json
-          windows_id=$(jq -r '.artifacts[] | select(.name=="binary-windows-latest-amd64") | .id' artifacts.json)
-          linux_amd64_id=$(jq -r '.artifacts[] | select(.name=="binary-ubuntu-latest-amd64") | .id' artifacts.json)
-          linux_arm64_id=$(jq -r '.artifacts[] | select(.name=="binary-linux-arm64") | .id' artifacts.json)
-          echo "windows_id=$windows_id" >> $GITHUB_ENV
-          echo "linux_amd64_id=$linux_amd64_id" >> $GITHUB_ENV
-          echo "linux_arm64_id=$linux_arm64_id" >> $GITHUB_ENV
-
-      - name: Update README.md
-        run: |
-          echo "### DOWNLOAD" > README.md
-          echo "| Platform      | Download Link |" >> README.md
-          echo "|---------------|---------------|" >> README.md
-          echo "| Windows (x64) | [Download](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ env.windows_id }}) |" >> README.md
-          echo "| Linux (amd64) | [Download](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ env.linux_amd64_id }}) |" >> README.md
-          echo "| Linux (arm64) | [Download](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ env.linux_arm64_id }}) |" >> README.md
-
-      - name: Configure Git for Push
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-
-      - name: Commit and Push Changes
-        run: |
-          git add README.md
-          git commit -m "Update README.md with correct artifact links"
-          git pull --rebase origin main
-          git push origin HEAD:main
