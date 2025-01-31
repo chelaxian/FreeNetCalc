@@ -68,8 +68,9 @@ jobs:
 
       - name: Setup QEMU for ARM64
         run: |
+          sudo dpkg --add-architecture arm64
           sudo apt update
-          sudo apt install -y qemu binfmt-support qemu-user-static
+          sudo apt install -y qemu-system-arm qemu-user qemu-user-static binfmt-support gcc-aarch64-linux-gnu
 
       - name: Build ARM64 Binary in Container
         run: |
@@ -79,6 +80,9 @@ jobs:
             pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py && \
             file ./bin/NetCalc
           "
+
+      - name: Check Binary Architecture
+        run: file ./bin/NetCalc
 
       - name: Upload ARM64 Artifacts
         uses: actions/upload-artifact@v4
