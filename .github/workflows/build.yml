@@ -66,12 +66,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup QEMU for ARM64
-        run: |
-          sudo dpkg --add-architecture arm64
-          sudo apt update
-          sudo apt install -y qemu-system-arm qemu-user qemu-user-static binfmt-support gcc-aarch64-linux-gnu
-
       - name: Build ARM64 Binary in Container
         run: |
           docker run --rm --platform linux/arm64 -v $(pwd):/src -w /src debian:bullseye bash -c "
@@ -89,6 +83,7 @@ jobs:
         with:
           name: binary-linux-arm64
           path: ./bin/*
+
 
 
   update-readme:
