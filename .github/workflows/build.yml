@@ -65,26 +65,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install PyInstaller
-        run: pip install pyinstaller
-
-      - name: Install dependencies
+      - name: Setup QEMU for ARM64
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          sudo apt update
+          sudo apt install -y qemu-user-static binfmt-support
+          docker run --rm --platform linux/arm64 debian:bullseye uname -m  # Проверка эмуляции ARM64
 
-      - name: Build Executable
-        run: pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
+      - name: Setup Python for ARM64
+        run: |
+          sudo apt install -y python3 python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pyinstaller
 
-      - name: Upload Artifacts
+      - name: Install Dependencies
+        run: |
+          if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
+
+      - name: Build Executable for ARM64
+        run: |
+          pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
+
+      - name: Upload ARM64 Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: binary-linux-arm64
           path: ./bin/*
+
 
   update-readme:
     needs: [build, linux-arm64]
