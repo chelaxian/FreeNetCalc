@@ -1,3 +1,4 @@
+
 name: Build Binaries
 
 on:
@@ -65,25 +66,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup QEMU for ARM64
+      - name: Install ARM64 Cross-Compiler
         run: |
           sudo apt update
-          sudo apt install -y qemu-user-static binfmt-support
-          docker run --rm --platform linux/arm64 debian:bullseye uname -m  # Проверка эмуляции ARM64
-
-      - name: Setup Python for ARM64
-        run: |
+          sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           sudo apt install -y python3 python3-pip
+
+      - name: Install PyInstaller for ARM64
+        run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install pyinstaller
 
-      - name: Install Dependencies
-        run: |
-          if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
-
       - name: Build Executable for ARM64
         run: |
-          pyinstaller --onefile --distpath ./bin --name NetCalc NetCalc.py
+          pyinstaller --onefile --distpath ./bin --name NetCalc --target-arch=aarch64 NetCalc.py
+          file ./bin/NetCalc  # Проверка архитектуры
 
       - name: Upload ARM64 Artifacts
         uses: actions/upload-artifact@v4
